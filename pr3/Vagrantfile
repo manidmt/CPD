@@ -1,0 +1,40 @@
+Vagrant.configure("2") do |config|
+# Configuración del nodo manager
+config.vm.define "manager" do |manager|
+    manager.vm.box = "ubuntu/focal64"
+    manager.vm.network "private_network", type: "dhcp"
+    manager.vm.hostname = "manager"
+    manager.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    end
+
+    manager.vm.synced_folder ".", "/vagrant", disabled: true
+    
+    # Provisionar Docker correctamente
+    manager.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y docker.io
+    sudo docker swarm init --advertise-addr $(hostname -I | cut -d' ' -f1)
+    SHELL
+end
+
+# Configuración de los workers
+(1..2).each do |i|
+    config.vm.define "nodo#{i}" do |worker|
+    worker.vm.box = "ubuntu/focal64"
+    worker.vm.network "private_network", type: "dhcp"
+    worker.vm.hostname = "nodo#{i}"
+    worker.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+    end
+
+    worker.vm.synced_folder ".", "/vagrant", disabled: true
+
+    worker.vm.provision "shell", inline: <<-SHELL
+        sudo apt-get update
+        sudo apt-get install -y docker.io
+    SHELL
+    end
+end
+end
+  

@@ -2,7 +2,7 @@
 
 **Autor:** Manuel Díaz-Meco Terrés
 
-**Fecha:** 4 de octubre de 2024
+**Fecha:** 12 de octubre de 2024
 
 ## Introducción
 
@@ -12,7 +12,7 @@ El objetivo de esta práctica es trabajar con Docker para la creación de imáge
 
 ## Ejecución del Servicio Web
 
-En este apartado se crea una imagen que contiene Apache y un archivo personalizado `index.html` para ser servido en el puerto 8080. Estos han sido los comandos utilizados para construir y ejecutar el contenedor:
+En este apartado se crea el *swarm* en uno de los nodos y en los otros 2 se ejecuta el comando necesario para unirse al nodo creador o *manager*. A continuación se muestran las imágenes y los comandos utilizados:
 
 ### Comandos utilizados:
 
@@ -74,3 +74,81 @@ docker service ps web
 ![Solo 1 nodo (apartado 3)](Inicio1_paso3.png)
 
 ![Activación automática del segundo nodo (apartado 3)](Inicio2_paso3.png)
+
+## Apartado Opcional con Vagrant
+
+Para este último apartado vamos a generar los nodos y el manager a partir del uso de vagrant y virtualbox, en vez de usar la página web que se muestra en las prácticas y que he utilizado anteriormente. Tras instalar Vagrant y VirtualBox se crea un archivo Vagrantfile en el directorio donde estabamos desarrollando la práctica.
+
+```Vagrantfile
+Vagrant.configure("2") do |config|
+# Configuración del nodo manager
+config.vm.define "manager" do |manager|
+    manager.vm.box = "ubuntu/focal64"
+    manager.vm.network "private_network", type: "dhcp"
+    manager.vm.hostname = "manager"
+    manager.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    end
+
+    manager.vm.synced_folder ".", "/vagrant", disabled: true
+
+    manager.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y docker.io
+    sudo docker swarm init --advertise-addr $(hostname -I | cut -d' ' -f1)
+    SHELL
+end
+
+# Configuración de los nodos
+(1..2).each do |i|
+    config.vm.define "nodo#{i}" do |worker|
+    worker.vm.box = "ubuntu/focal64"
+    worker.vm.network "private_network", type: "dhcp"
+    worker.vm.hostname = "nodo#{i}"
+    worker.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+    end
+
+    worker.vm.synced_folder ".", "/vagrant", disabled: true
+
+    worker.vm.provision "shell", inline: <<-SHELL
+        sudo apt-get update
+        sudo apt-get install -y docker.io
+    SHELL
+    end
+end
+end
+```
+
+### Comandos Utilizados:
+
+**En mi máquina principal:**
+
+```bash
+vagrant up
+vagrant ssh manager
+vagrant ssh nodo1
+vagrant ssh nodo2
+```
+
+**En el nodo manager:**
+
+```bash
+docker swarm init --advertise-addr 192.168.56.3
+docker node ls
+```
+
+**En los nodos:**
+
+```bash
+sudo docker swarm join --token SWMTKN-1-1qnptttbj3wvk78mbkhlw6hfdt4cmdf0ocvy2jeh02fyais6cc-cd6duo4zwau0j0p2u2jyzgpg7 192.168.56.3:2377
+```
+
+### Capturas de Pantalla:
+
+![Nodo manager en uso](./Manager_paso4.png)
+
+![Nodos funcionando](./Nodos_paso4.png)
+
+![Correcto funcionamiento](./Final_paso4.png)
+
