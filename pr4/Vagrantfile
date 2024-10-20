@@ -1,0 +1,67 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#instalar hostmanager plugin
+#
+DIRCPD = '.'
+
+disk1 = DIRCPD + "/disk1.vdi"
+disk2 = DIRCPD + "/disk2.vdi"
+disk3 = DIRCPD + "/disk3.vdi"
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "rockylinux/9"
+  config.vm.provision "shell", inline: <<-SHELL
+        sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+        systemctl restart sshd.service
+        dnf -y update
+#        yum -y install epel-release net-tools
+        echo "192.168.56.11 centos1" >> /etc/hosts
+        echo "192.168.56.12 centos2" >> /etc/hosts
+        echo "192.168.56.13 centos3" >> /etc/hosts
+  SHELL
+  config.vm.define :centos1 do |centos_config|
+      centos_config.vm.hostname = "centos1.vm"
+      centos_config.vm.network "private_network" , ip:"192.168.56.11"
+      centos_config.vm.synced_folder ".","/vagrant"
+      centos_config.vm.provider :virtualbox do |vb|
+          vb.name = "centos1"
+          vb.customize ["modifyvm", :id, "--memory", "1024"]
+          vb.customize ["modifyvm", :id, "--cpus", "1"]
+          unless File.exist?(disk1)
+            vb.customize ['createhd', '--filename', disk1, '--size', 10 * 1024]
+            vb.customize ['storageattach', :id, '--storagectl', 'IDE Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk1]
+          end
+      end
+  end
+
+  config.vm.define :centos2 do |centos_config|
+      centos_config.vm.hostname = "centos2.vm"
+      centos_config.vm.network "private_network" , ip:"192.168.56.12"
+      centos_config.vm.synced_folder ".","/vagrant"
+      centos_config.vm.provider :virtualbox do |vb|
+          vb.name = "centos2"
+          vb.customize ["modifyvm", :id, "--memory", "1024"]
+          vb.customize ["modifyvm", :id, "--cpus", "1"]
+          unless File.exist?(disk2)
+            vb.customize ['createhd', '--filename', disk2, '--size', 10 * 1024]
+            vb.customize ['storageattach', :id, '--storagectl', 'IDE Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk2]
+          end
+      end
+  end
+
+config.vm.define :centos3 do |centos_config|
+      centos_config.vm.hostname = "centos3.vm"
+      centos_config.vm.network "private_network" , ip:"192.168.56.13"
+      centos_config.vm.synced_folder ".","/vagrant"
+      centos_config.vm.provider :virtualbox do |vb|
+          vb.name = "centos3"
+          vb.customize ["modifyvm", :id, "--memory", "1024"]
+          vb.customize ["modifyvm", :id, "--cpus", "1"]
+          unless File.exist?(disk3)
+            vb.customize ['createhd', '--filename', disk3, '--size', 10 * 1024]
+            vb.customize ['storageattach', :id, '--storagectl', 'IDE Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', disk3]
+          end
+      end
+  end
+
+end
