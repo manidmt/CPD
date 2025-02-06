@@ -12,7 +12,7 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def resp_ls(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(ejecuta_w())
 
-app = ApplicationBuilder().token("8012205959:AAHTKUKWwEEfKNnRIjetpLkUHbzFaMMDdSI").build()
+app = ApplicationBuilder().token("**************************zFaMMDdSI").build()
 app.add_handler(CommandHandler("hello", hello))
 app.add_handler(CommandHandler("ls", resp_ls))
 app.run_polling()
