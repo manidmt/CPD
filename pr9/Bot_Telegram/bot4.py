@@ -111,7 +111,7 @@ async def correr_orden(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     orden = context.args[0]
     await update.message.reply_text(ejecuta_w(orden))
 
-app = ApplicationBuilder().token("8012205959:AAHTKUKWwEEfKNnRIjetpLkUHbzFaMMDdSI").build()
+app = ApplicationBuilder().token("****************************FaMMDdSI").build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("ping", ping_command))
 app.add_handler(CommandHandler("start_ping_ugr", start_ugr_ping))
