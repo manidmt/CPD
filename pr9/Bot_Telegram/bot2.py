@@ -56,7 +56,7 @@ async def ping_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     else:
         await update.message.reply_text(text=f"No se pudo hacer ping al host {host}.", parse_mode=ParseMode.MARKDOWN)
         
-app = ApplicationBuilder().token("8012205959:AAHTKUKWwEEfKNnRIjetpLkUHbzFaMMDdSI").build()
+app = ApplicationBuilder().token("****************************FaMMDdSI").build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("ping", ping_command))
 app.run_polling()
